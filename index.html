@@ -208,7 +208,9 @@
           // Mensaje del bot
           const botMsg = document.createElement("div");
           botMsg.className = "text-left bg-gray-100 px-2 py-1 rounded mb-1";
-          botMsg.textContent = "🤖 phi4-mini responde: " + (data.message || "No hay respuesta.");
+         
+          botMsg.textContent = data.response || "No hay respuesta.";
+
           phi4Messages.appendChild(botMsg);
           phi4Messages.scrollTop = phi4Messages.scrollHeight;
 
