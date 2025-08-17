@@ -116,55 +116,58 @@ function loadContent(section, btn){
   contentEl.classList.remove("fade-in");
   contentEl.classList.add("fade-out");
 
-  setTimeout(() => {
-    contentEl.innerHTML = content[section] || "<p>Proyecto no encontrado.</p>";
-    contentEl.classList.remove("fade-out");
-    contentEl.classList.add("fade-in");
+ setTimeout(() => {
+  contentEl.innerHTML = content[section] || "<p>Proyecto no encontrado.</p>";
+  contentEl.classList.remove("fade-out");
+  contentEl.classList.add("fade-in");
 
-    const phi4Form = document.getElementById("phi4Form");
-    const phi4Messages = document.getElementById("phi4Messages");
+  // Iniciar chat phi4-mini si existe
+  const phi4Form = document.getElementById("phi4Form");
+  const phi4Messages = document.getElementById("phi4Messages");
 
-    if(phi4Form){
-      phi4Form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const input = phi4Form.querySelector("input");
-        const text = input.value.trim();
-        if(!text) return;
+  if (phi4Form) {
+    phi4Form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = phi4Form.querySelector("input");
+      const text = input.value.trim();
+      if (!text) return;
 
-        const userMsg = document.createElement("div");
-        userMsg.className="text-right bg-indigo-100 px-2 py-1 rounded mb-1";
-        userMsg.textContent = text;
-        phi4Messages.appendChild(userMsg);
+      // Mensaje del usuario
+      const userMsg = document.createElement("div");
+      userMsg.className = "text-right bg-indigo-100 px-2 py-1 rounded mb-1";
+      userMsg.textContent = text;
+      phi4Messages.appendChild(userMsg);
 
-        input.value="";
+      input.value = "";
+      phi4Messages.scrollTop = phi4Messages.scrollHeight;
+
+      try {
+        const response = await fetch("https://phi4-mini-backend.onrender.com/phi4", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: text })
+        });
+        const data = await response.json();
+
+        // Mensaje del bot (usa "message" que es lo que devuelve tu backend)
+        const botMsg = document.createElement("div");
+        botMsg.className = "text-left bg-gray-100 px-2 py-1 rounded mb-1";
+        botMsg.textContent = data.message || "No hay respuesta.";
+        phi4Messages.appendChild(botMsg);
         phi4Messages.scrollTop = phi4Messages.scrollHeight;
 
-        try {
-          const response = await fetch("https://phi4-mini-backend.onrender.com/phi4", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({ prompt: text })
-          });
-          const data = await response.json();
+      } catch (err) {
+        const botMsg = document.createElement("div");
+        botMsg.className = "text-left bg-gray-100 px-2 py-1 rounded mb-1";
+        botMsg.textContent = "⚠️ Error al conectar con el servidor.";
+        phi4Messages.appendChild(botMsg);
+        phi4Messages.scrollTop = phi4Messages.scrollHeight;
+        console.error(err);
+      }
+    });
+  }
+}, 300);
 
-          const botMsg = document.createElement("div");
-          botMsg.className = "text-left bg-gray-100 px-2 py-1 rounded mb-1";
-          botMsg.textContent = data.message || "No hay respuesta.";
-          phi4Messages.appendChild(botMsg);
-          phi4Messages.scrollTop = phi4Messages.scrollHeight;
-
-        } catch(err) {
-          const botMsg = document.createElement("div");
-          botMsg.className = "text-left bg-gray-100 px-2 py-1 rounded mb-1";
-          botMsg.textContent = "⚠️ Error al conectar con el servidor.";
-          phi4Messages.appendChild(botMsg);
-          phi4Messages.scrollTop = phi4Messages.scrollHeight;
-          console.error(err);
-        }
-      });
-    }
-
-  }, 300);
 }
 </script>
 </body>
